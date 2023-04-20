@@ -19,8 +19,9 @@ const Session = async (
   try {
     //we are using bearer token to authorize users
     if (req.method === "OPTIONS") return next();
-    const token = await req.headers.authorization?.split("")[1];
-
+    
+    const token = await req.headers.authorization?.split(" ")[1];
+    
     if (token === "" || token === undefined || token === null) {
       return next();
     }

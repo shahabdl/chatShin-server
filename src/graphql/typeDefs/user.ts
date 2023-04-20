@@ -6,6 +6,7 @@ const userTypeDefs = `#graphql
 
     type Query {
         searchUsers(username: String): [User]
+        signIn(email: String, password: String): SignUpResponse
     }
 
     type Mutation {

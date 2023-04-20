@@ -60,6 +60,7 @@ async function main() {
   await prisma.$connect();
 
   app.use(cors(corsOption));
+  app.use((req, res, next) => Session(req, res, next, prisma));
   app.use(
     "/graphql",
     bodyParser.json(),
@@ -70,8 +71,7 @@ async function main() {
       }),
     })
   );
-  app.use((req, res, next) => Session(req, res, next, prisma));
-
+  
   const PORT = 4000;
   await new Promise<void>((resolve) =>
     httpServer.listen({ port: 4000 }, resolve)
