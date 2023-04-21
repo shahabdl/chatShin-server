@@ -1,20 +1,25 @@
-import { error } from "console";
 import { createNewToken } from "../../utils/functions.js";
+import jwt from "jsonwebtoken";
 import {
   CreateUsernameResponse,
   GraphQLContext,
-  SignUpResponse,
+  UserResponse,
 } from "../../utils/types";
 import bcrypt from "bcrypt";
 
 const userResolvers = {
   Query: {
-    searchUsers: () => {},
+    searchUsers: async (_parent: any, args: "", context: GraphQLContext) => {
+      const users = await context.prisma.user.findMany({ where: {} });
+      return users.map((user) => {
+        if (user.username) return user.username;
+      });
+    },
     signIn: async (
       _: any,
       args: { email: string; password: string },
       context: GraphQLContext
-    ): Promise<SignUpResponse> => {
+    ): Promise<UserResponse> => {
       const { prisma } = context;
       try {
         const user = await prisma.user.findUnique({
@@ -60,13 +65,60 @@ const userResolvers = {
         };
       }
     },
+    authToken: async (
+      _parent: any,
+      args: { token: string },
+      context: GraphQLContext
+    ): Promise<UserResponse> => {
+      let verifiedToken;
+
+      try {
+        verifiedToken = jwt.verify(
+          args.token,
+          process.env.TOKEN_SECRET as string
+        );
+      } catch (error) {
+        return {
+          user: {
+            id: "",
+            username: "",
+            email: "",
+            userAccessToken: "",
+          },
+          success: false,
+          error: "",
+        };
+      }
+      if (typeof verifiedToken !== "string") {
+        return {
+          user: {
+            id: verifiedToken.userId,
+            username: verifiedToken.username,
+            email: verifiedToken.email,
+            userAccessToken: args.token,
+          },
+          success: true,
+          error: "",
+        };
+      }
+      return {
+        user: {
+          id: "",
+          username: "",
+          email: "",
+          userAccessToken: "",
+        },
+        success: false,
+        error: "",
+      };
+    },
   },
   Mutation: {
     signUp: async (
       _: any,
       args: { email: string; password: string },
       context: GraphQLContext
-    ): Promise<SignUpResponse> => {
+    ): Promise<UserResponse> => {
       const { prisma } = context;
       const userExists = await prisma.user.findUnique({
         where: {
@@ -112,35 +164,35 @@ const userResolvers = {
       _: any,
       args: { username: string },
       context: GraphQLContext
-    ): Promise<CreateUsernameResponse> => {
+    ): Promise<UserResponse> => {
       const { prisma, session } = context;
-      
-      if (!session) {
-        return { error: "user is not authorized to perform this action" };
-      }
-      const { id } = session;
-      const userExists = await prisma.user.findUnique({
-        where: {
-          id,
-        },
-      });
-      console.log(id);
-      console.log(userExists);
-      
-      if(!userExists){
-        return {error:"user does not exists!"}
-      }
       try {
+        if (!session) {
+          throw new Error("user is not authorized to perform this action");
+        }
+        const { id } = session;
+        const userExists = await prisma.user.findUnique({
+          where: {
+            id,
+          },
+        });
+
+        if (!userExists) {
+          throw new Error("User does not exist!");
+        }
+
         const checkUsername = await prisma.user.findUnique({
           where: {
             username: args.username,
           },
         });
+        console.log(checkUsername);
+
         if (checkUsername) {
-          return { error: "this username already exists!" };
+          throw new Error("Username already exists");
         }
 
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: {
             id,
           },
@@ -148,9 +200,33 @@ const userResolvers = {
             username: args.username,
           },
         });
-        return { success: true };
+        const token = createNewToken({
+          userId: updatedUser.id,
+          email: updatedUser.email,
+          username: updatedUser.username ? updatedUser.username : "",
+        });
+        return {
+          user: {
+            id: updatedUser.id,
+            username: updatedUser.username ? updatedUser.username : "",
+            email: updatedUser.email,
+            userAccessToken: token,
+          },
+          success: true,
+          error: "",
+        };
       } catch (error) {
-        return { error: "error" };
+        console.log(error);
+        return {
+          user: {
+            id: "",
+            username: "",
+            email: "",
+            userAccessToken: "",
+          },
+          success: false,
+          error: "",
+        };
       }
     },
   },

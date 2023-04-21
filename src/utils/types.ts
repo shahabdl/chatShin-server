@@ -16,7 +16,7 @@ export interface CreateUsernameResponse {
   error?: string;
 }
 
-export interface SignUpResponse {
+export interface UserResponse {
   user: {
     id: string;
     username: string;

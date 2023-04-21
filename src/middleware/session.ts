@@ -43,10 +43,8 @@ const Session = async (
       };
       next();
     }
-  } catch (error) {
-    return res.status(500).json({
-      error: "somthing went wrong in server. please try again later!",
-    });
+  } catch (error) {    
+    return next();
   }
 };
 

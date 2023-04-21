@@ -5,17 +5,17 @@ const userTypeDefs = `#graphql
     }
 
     type Query {
-        searchUsers(username: String): [User]
-        signIn(email: String, password: String): SignUpResponse
+        searchUsers: [String]
+        signIn(email: String, password: String): UserResponse
+        authToken(token: String): UserResponse
     }
 
     type Mutation {
-        signUp(email: String, password: String): SignUpResponse
-        createUsername(username: String): CreateUsernameResponse
+        signUp(email: String, password: String): UserResponse
+        createUsername(username: String): UserResponse
     }
 
-    type CreateUsernameResponse { success: Boolean, error: String}
-    type SignUpResponse { user: SignUpUserType, success: Boolean, error: String}
+    type UserResponse { user: SignUpUserType, success: Boolean, error: String}
     type SignUpUserType {id: String, email: String, username: String, userAccessToken: String}
 `;
 
