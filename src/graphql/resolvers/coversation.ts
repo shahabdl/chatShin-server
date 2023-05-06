@@ -3,7 +3,14 @@ import { GraphQLContext } from "../../utils/types";
 const conversationResolvers = {
   Query: {
     conversations: async (_: any, __: any, context: GraphQLContext) => {
-      console.log("conversations");
+      const { session, prisma } = context;
+      try {
+        if(!session || !session.id){
+          throw new Error("user is not authorized to make new conversation");
+        }
+      } catch (error) {
+        
+      }
     },
   },
   Mutation: {

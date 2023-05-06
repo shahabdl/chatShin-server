@@ -8,7 +8,7 @@ const ConversationTypeDefs = `#graphql
 
     type Conversation {
         id: String
-        #latestMessage: Message
+        latestMessage: Message
         participants: [Participants]
         createdAt: Date
         updatedAt: Date
@@ -16,7 +16,7 @@ const ConversationTypeDefs = `#graphql
 
     type Participants{
         id: String
-        user: User
+        user: SearchedUser
         hasSeenLatestMessage: Boolean
     }
 
