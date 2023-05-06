@@ -1,4 +1,4 @@
-import express, { Response } from "express";
+import express from "express";
 import { createServer } from "http";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -65,7 +65,7 @@ async function main() {
     "/graphql",
     bodyParser.json(),
     expressMiddleware(server, {
-      context: async ({ req, res }) => ({
+      context: async ({ req, res }) => ({        
         session: req.userData,
         prisma,
       }),

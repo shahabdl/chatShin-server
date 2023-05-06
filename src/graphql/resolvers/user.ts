@@ -1,7 +1,6 @@
 import { createNewToken } from "../../utils/functions.js";
 import jwt from "jsonwebtoken";
 import {
-  CreateUsernameResponse,
   GraphQLContext,
   UserResponse,
 } from "../../utils/types";
