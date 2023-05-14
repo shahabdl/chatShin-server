@@ -4,20 +4,21 @@ const ConversationTypeDefs = `#graphql
     type Mutation {
         createConversation(paricipantsIds: [String]): Response
     }
+
     type Response {conversationId: Boolean, success: Boolean, error: String}
 
     type Conversation {
         id: String
         latestMessage: Message
-        participants: [Participants]
+        ConversationParticipant: [ConversationParticipant]
         createdAt: Date
         updatedAt: Date
     }
 
-    type Participants{
+    type ConversationParticipant{
         id: String
         user: SearchedUser
-        hasSeenLatestMessage: Boolean
+        hasSeen: Boolean
     }
 
     type Query {

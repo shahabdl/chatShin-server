@@ -1,18 +1,38 @@
-import { Prisma } from "@prisma/client";
+import { Conversation, Prisma } from "@prisma/client";
 import { GraphQLContext } from "../../utils/types";
 const conversationResolvers = {
   Query: {
     conversations: async (_: any, __: any, context: GraphQLContext) => {
       const { session, prisma } = context;
       try {
-        if(!session || !session.id){
+        if (!session || !session.id) {
           throw new Error("user is not authorized to make new conversation");
         }
+        const { id } = session;
+        const conversations = await prisma.conversation.findMany({
+          where: {
+            ConversationParticipant: {
+              some: {
+                userId: {
+                  equals: id,
+                },
+              },
+            },
+          },
+          include: conversationPopulated,
+        });
+        return conversations;
       } catch (error) {
-        
+        console.log(error);
       }
+      return;
     },
+    // conversationParticipants: async (parent:Conversation, _:any, context: GraphQLContext) => {
+    //   console.log(parent);
+    //   return {};
+    // },
   },
+
   Mutation: {
     createConversation: async (
       _: any,
@@ -34,10 +54,7 @@ const conversationResolvers = {
               },
             },
           },
-          include: conversationPopulated,
         });
-        console.log(conversation);
-
         return { conversationId: conversation.id, success: true, error: "" };
       } catch (error) {
         console.log("createConversation: ", error);
@@ -53,7 +70,7 @@ const conversationResolvers = {
 
 export const participantPopulated =
   Prisma.validator<Prisma.ConversationParticipantInclude>()({
-    uesr: {
+    user: {
       select: {
         id: true,
         username: true,
